@@ -1,37 +1,51 @@
-//comment like
-const express = require('express')
+//comment like 
+const express = require("express")
 const router = express()
-const { createWebAPIRequest } = require('../util/util')
-
-router.get('/', (req, res) => {
+const { createWebAPIRequest } = require("../util/util")
+const querystring = require('querystring');
+router.get("/", (req, res) => {
   const cookie = req.get('Cookie') ? req.get('Cookie') : ''
-  const cid = req.query.cid //评论 id
-  const id = req.query.id //  歌曲 id
-  const typeMap = {
-    0: 'R_SO_4_', //歌曲
-    1: 'R_MV_5_', //mv
-    2: 'A_PL_0_', //歌单
-    3: 'R_AL_3_', //专辑
-    4: 'A_DJ_1_' //电台
+  const cid = req.query.cid  //评论 id
+  const id=req.query.id//  歌曲 id
+  const typeMap={
+    0:"R_SO_4_",//歌曲
+    1:"R_MV_5_",//mv
+    2:"A_PL_0_",//歌单
+    3:"R_AL_3_",//专辑
+    4:"A_DJ_1_",//电台
   }
-  const type = typeMap[req.query.type]
+  const type=typeMap[req.query.type]
   const data = {
-    threadId: `${type}${id}`,
-    commentId: cid,
-    csrf_token: ''
+    "threadId": `${type}${id}`,
+		commentId:cid,
+		"csrf_token": ""
   }
-  const action = req.query.t == 1 ? 'like' : 'unlike'
-
+  const action=(req.query.t==1?'like':'unlike')
+  
   const url = `/weapi/v1/comment/${action}`
+  const qs = querystring.parse(req.url.split('?')[1]);
   createWebAPIRequest(
     'music.163.com',
     url,
     'POST',
     data,
     cookie,
-    music_req => res.send(music_req),
+    music_req => {
+
+      if(qs.callback){
+
+        var callback = qs.callback + "(" + music_req + ");";
+        res.send(callback);
+      }else {
+
+        res.send( music_req );
+      }
+      
+    },
     err => res.status(502).send('fetch error')
   )
 })
+
+
 
 module.exports = router

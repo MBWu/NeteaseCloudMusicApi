@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express()
 const { createWebAPIRequest } = require('../util/util')
+const querystring = require('querystring');
 
 router.get('/', (req, res) => {
   const cookie = req.get('Cookie') ? req.get('Cookie') : ''
@@ -11,14 +12,23 @@ router.get('/', (req, res) => {
     csrf_token: '',
     songId
   }
-
+  const qs = querystring.parse(req.url.split('?')[1]);
   createWebAPIRequest(
     'music.163.com',
     `/weapi/radio/trash/add?alg=${alg}&songId=${songId}&time=${time}`,
     'POST',
     data,
     cookie,
-    music_req => res.send(music_req),
+    music_req => {
+      if(qs.callback ){
+        
+                var callback = qs.callback + "(" + music_req + ");";
+                res.send(callback);
+              }else{
+        
+                res.send(music_req);
+              }
+    },
     err => res.status(502).send('fetch error')
   )
 })

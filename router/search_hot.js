@@ -6,14 +6,14 @@ const querystring = require('querystring');
 router.get("/", (req, res) => {
   const cookie = req.get('Cookie') ? req.get('Cookie') : ''
   const data = {
-    songid: req.query.id,
-    offset: req.query.offset || 0,
-    limit: req.query.limit || 50
+    "csrf_token": "",
+		type: req.query.type  || 1,
+		s: keywords || req.query.keywords || ''
   }
   const qs = querystring.parse(req.url.split('?')[1]);
   createWebAPIRequest(
     'music.163.com',
-    '/weapi/discovery/simiPlaylist',
+    '/api/search/hot?type=1',
     'POST',
     data,
     cookie,
@@ -30,5 +30,7 @@ router.get("/", (req, res) => {
     err => res.status(502).send('fetch error')
   )
 })
+
+
 
 module.exports = router

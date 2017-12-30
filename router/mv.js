@@ -1,25 +1,31 @@
-const express = require('express')
+const express = require("express")
 const router = express()
-const { createWebAPIRequest } = require('../util/util')
+const { createRequest } = require("../util/util")
+const request=require("request")
+const querystring = require('querystring');
 
-router.get('/', (req, res) => {
-  const cookie = req.get('Cookie') ? req.get('Cookie') : ''
-  const mvid = req.query.mvid
-  const data = {
-    id: mvid
-  }
+router.get("/", (req, res) => {
+  const mvid = req.query.mvid;
+  const qs = querystring.parse(req.url.split('?')[1]);
+  createRequest(`/api/mv/detail/?id=${mvid}&type=mp4`, 'GET', null)
+    .then(result => {
+      res.setHeader("Content-Type", "application/json")
 
-  createWebAPIRequest(
-    'music.163.com',
-    `/weapi/mv/detail`,
-    'POST',
-    data,
-    cookie,
-    music_req => {
-      res.send(music_req)
-    },
-    err => res.status(502).send('fetch error')
-  )
+      if(qs.callback ){
+        
+                var callback = qs.callback + "(" + result + ");";
+                res.send(callback);
+              }else{
+        
+                res.send(result);
+              }
+
+   
+    })
+    .catch(err => {
+      res.status(502).send('fetch error')
+    })
 })
+
 
 module.exports = router

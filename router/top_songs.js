@@ -1,18 +1,20 @@
 //新歌上架
-const express = require('express')
+const express = require("express")
 const router = express()
-const { createWebAPIRequest } = require('../util/util')
+const { createWebAPIRequest } = require("../util/util")
+const querystring = require('querystring');
 
 // type ALL, ZH,EA,KR,JP
-router.get('/', (req, res) => {
+router.get("/", (req, res) => {
   const cookie = req.get('Cookie') ? req.get('Cookie') : ''
   const data = {
-    offset: req.query.offset,
-    total: true,
-    limit: req.query.limit,
-    area: req.query.type,
-    csrf_token: ''
+    'offset': request.query.offset,
+		'total': true,
+		'limit': request.query.limit,
+		'area': request.query.type,
+		"csrf_token": ""
   }
+  const qs = querystring.parse(req.url.split('?')[1]);
   createWebAPIRequest(
     'music.163.com',
     '/weapi/v1/discovery/new/songs',
@@ -20,10 +22,18 @@ router.get('/', (req, res) => {
     data,
     cookie,
     music_req => {
-      res.send(music_req)
+      if(qs.callback ){
+        
+                var callback = qs.callback + "(" + music_req + ");";
+                res.send(callback);
+              }else{
+        
+                res.send(music_req);
+              }
     },
     err => res.status(502).send('fetch error')
   )
 })
+
 
 module.exports = router
